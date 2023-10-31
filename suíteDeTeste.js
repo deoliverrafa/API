@@ -1,7 +1,7 @@
 // Início das instâncias para trabalho com o nosso banco de dados
 const assert = require('assert');
 const MongoDB = require('./MongoDB')
-const Context = require('./contextStrategy/contextStrategy')
+const Context = require('./contextStrategy')
 const getConnection = require('./connection.js')
 const userSchema = require('../schemas/userSchemas.js')
 const connection = new getConnection();

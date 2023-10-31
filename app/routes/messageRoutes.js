@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Message = require('./messageSchemas'); // Importe o modelo Message
+const Message = require('../schemas/messageSchemas'); // Importe o modelo Message
 
 router.post('/enviar', async (req, res) => {
     try {

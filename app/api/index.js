@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const usuarioRoutes = require('./userRoutes');
-const messageRoutes = require('./messageRoutes')
+const usuarioRoutes = require('../routes/userRoutes');
+const messageRoutes = require('../routes/messageRoutes')
 const cors = require('cors')
 
 app.use(bodyParser.json());
@@ -19,7 +19,7 @@ app.use(cors({
   preflightContinue: false,
   optionsSuccessStatus: 204,
 }))
-// hello
+
 
 app.use('/api', usuarioRoutes);
 app.use('/mensagem', messageRoutes)

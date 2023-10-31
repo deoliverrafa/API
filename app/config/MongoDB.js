@@ -1,4 +1,4 @@
-const Icrud = require('./crud')
+const Icrud = require('./interfaceCrud/crud')
 
 const STATUS = {
     0: 'Desconectado',

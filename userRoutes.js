@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const MongoDB = require('./MongoDB.js');
-const userSchema = require('./userSchemas.js')
-const Context = require('./contextStrategy.js')
+const MongoDB = require('../config/MongoDB');
+const userSchema = require('../schemas/userSchemas.js')
+const Context = require('../config/contextStrategy/contextStrategy.js')
 const context = new Context(new MongoDB(userSchema))
-const getConnection = require('./connection');
+const getConnection = require('../config/connection');
 const connection = new getConnection()
 const bcrypt = require('bcrypt');
 const multer = require('multer')
@@ -17,7 +17,7 @@ router.post('/cadastrar', async (req, res) => {
 
     const { nickName, userName, phoneNumber, email, password, birthDayData, type, nacionality } = req.body;
 
-    if (!nickName || !userName || !phoneNumber || !email || !password || !birthDayData || !nacionality) {
+    if (!nickName || !userName || !phoneNumber || !email || !password) {
       return res.status(400).json({ error: 'Preencha tudo Corretamente' });
     }
 

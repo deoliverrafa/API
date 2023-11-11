@@ -120,7 +120,6 @@ router.get('/searchById', async (req, res) => {
 })
 
 // Rota para pegar imagem de perfil do usuário
-
 router.get('/getUserImage', async (req, res) => {
   try {
     await connection.connect();
@@ -195,7 +194,6 @@ router.put('/attProfile', upload.single('avatar'), async (req, res) => {
   }
 });
 
-
 // ROTA PARA GET DO INPUT FRIENDS
 router.get('/getUser', async (req, res) => {
   await connection.connect()
@@ -245,7 +243,6 @@ router.put('/follow', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
-
 
 // ROTA PARA PEGAR USUARIO ATUAL PELO ID
 router.get('/getCurrentUser', async (req, res) => {

@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const MongoDB = require('./MongoDB');
-const userSchema = require('./userSchemas.js')
-const Context = require('./contextStrategy.js')
+const MongoDB = require('../config/MongoDB');
+const userSchema = require('../schemas/userSchemas.js')
+const Context = require('../config/contextStrategy/contextStrategy.js')
 const context = new Context(new MongoDB(userSchema))
-const getConnection = require('./connection');
+const getConnection = require('../config/connection');
 const connection = new getConnection()
 const bcrypt = require('bcrypt');
 const multer = require('multer')
@@ -57,7 +57,7 @@ router.post('/cadastrar', async (req, res) => {
 });
 
 // rota para get de usuários passando o parâmetro email e senha
-router.get('/usuarios', async (req, res) => {
+router.get('/login', async (req, res) => {
   try {
     await connection.connect();
 
@@ -75,12 +75,7 @@ router.get('/usuarios', async (req, res) => {
     if (result.length === 0) {
       const secondTry = await context.read({ nickName: email })
       result = secondTry;
-      if (result.length === 0) {
-        const thirdTry = await context.read({ phoneNumber: email })
-        result = thirdTry;
-      }
     }
-
 
     // Verifica se o resultado não é nulo e se há pelo menos um usuário encontrado com esse email
     if (result.length === 1) {
@@ -97,16 +92,16 @@ router.get('/usuarios', async (req, res) => {
           return res.json(user);
         } else {
           // Senha incorreta
-          return res.status(401).json({ error: "E-mail ou senha incorretos. Tente novamente." });
+          return res.status(401).json({ error: "E-mail ou senha incorretos" });
         }
       });
     } else {
       // Nenhum usuário encontrado com esse email
-      return res.status(404).json({ error: "E-mail ou senha incorretos. Tente novamente." });
+      return res.status(404).json({ error: "E-mail ou senha incorretos" });
     }
   } catch (error) {
     // Em caso de erro ao ler o banco de dados
-    res.status(500).json({ error: 'Erro ao ler banco de dados.' });
+    res.status(500).json({ error: 'Erro ao ler banco de dados' });
   }
 });
 
@@ -157,51 +152,131 @@ const storage = multer.memoryStorage(); // Usando memoryStorage para armazenar o
 const upload = multer({ storage: storage });
 
 // Rota para atualizar os Dados do Usuário
-
 router.put('/attProfile', upload.single('avatar'), async (req, res) => {
-    const { bioData, cityData, userId } = req.body;
-    const avatarFile = req.file;
+  const { bioData, userId } = req.body;
+  const avatarFile = req.file;
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Não autorizado. Faça o login para alterar o perfil.' });
+  if (!userId) {
+    return res.status(401).json({ error: 'Não autorizado. Faça o login para alterar o perfil.' });
+  }
+
+  try {
+    await connection.connect();
+
+    const updateData = {}; // Objeto para armazenar os campos que serão atualizados
+
+    if (avatarFile) {
+      if (avatarFile.mimetype) {
+        updateData['avatar.contentType'] = avatarFile.mimetype;
+      }
+      if (avatarFile.originalname) {
+        updateData['avatar.filename'] = avatarFile.originalname;
+      }
+      if (avatarFile.buffer) {
+        updateData['avatar.image'] = avatarFile.buffer;
+      }
     }
 
-    try {
-      await connection.connect();
+    if (typeof bioData !== 'undefined') {
+      updateData.bio = bioData;
+    }
 
-      const updateData = {}; // Objeto para armazenar os campos que serão atualizados
+    const usuario = await context.update(userId, updateData);
 
-      if (avatarFile) {
-        if (avatarFile.mimetype) {
-          updateData['avatar.contentType'] = avatarFile.mimetype;
-        }
-        if (avatarFile.originalname) {
-          updateData['avatar.filename'] = avatarFile.originalname;
-        }
-        if (avatarFile.buffer) {
-          updateData['avatar.image'] = avatarFile.buffer;
-        }
-      }
-      
-      if (typeof bioData !== 'undefined') {
-        updateData.bio = bioData;
-      }
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
 
-      if (typeof cityData !== 'undefined') {
-        updateData.city = cityData;
-      }
-
-      const usuario = await context.update(userId, updateData);
-
-      if (!usuario) {
-        return res.status(404).json({ error: 'Usuário não encontrado.' });
-      }
-
-      return res.status(200).json({ message: 'Imagem de perfil atualizada com sucesso.', usuario });
+    return res.status(200).json({ message: 'Imagem de perfil atualizada com sucesso.', usuario });
 
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: 'Erro na solicitação' });
+  }
+});
+
+
+// ROTA PARA GET DO INPUT FRIENDS
+router.get('/getUser', async (req, res) => {
+  await connection.connect()
+
+  const { nickName } = req.query;
+
+  try {
+    // Certifique-se de que 'nickName' não é undefined ou null
+    if (!nickName) {
+      return res.status(400).json({ error: 'Parâmetro nickName não fornecido' });
+    }
+
+    // Use a função findUSersToFriends corrigida
+    const response = await context.read({ nickName: { $regex: new RegExp(nickName, 'i') } });
+
+    if (!response || response.length === 0) {
+      return res.json({ message: 'Usuário não encontrado. Tente novamente.' });
+    }
+
+    return res.json(response);
+  } catch (error) {
+    console.error('Erro ao buscar usuários:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+
+// ROTA PARA SEGUIR USUÁRIO
+router.put('/follow', async (req, res) => {
+  try {
+    await connection.connect();
+    // Obtenha o ID do usuário a ser seguido
+    const { currentUserId, userIdToFollow } = req.body;
+
+    // Encontra o usuário atual no banco de dados
+    const currentUser = await userSchema.findById(currentUserId);
+
+    // Adiciona o ID do usuário a ser seguido ao array following
+    currentUser.following.push(userIdToFollow);
+
+    // Salva as alterações no banco de dados
+    await currentUser.save();
+
+    res.status(200).json({ message: 'Usuário seguido com sucesso!' });
+  } catch (error) {
+    console.error('Erro ao seguir o usuário:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+
+// ROTA PARA PEGAR USUARIO ATUAL PELO ID
+router.get('/getCurrentUser', async (req, res) => {
+  try {
+    await connection.connect()
+    const { currentUserId } = req.query
+    const currentUser = await userSchema.findById(currentUserId);
+
+    if (!currentUser) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    res.status(200).json(currentUser);
+  } catch (error) {
+    return res.status(500).json({ error: "Erro ao pegar usuário" })
+  }
+})
+
+// ROTA PARA DEIXAR DE SEGUIR O USUARIO
+router.put('/unfollow', async (req, res) => {
+  try {
+      const { userIdToUnfollow, currentUserId } = req.body;
+
+      // Lógica para remover o usuário do array 'following'
+      await userSchema.findByIdAndUpdate(currentUserId, {
+          $pull: { following: userIdToUnfollow },
+      });
+
+      res.status(200).json({ success: true, message: 'Usuário removido com sucesso' });
+  } catch (error) {
+      console.error('Erro ao remover o usuário:', error);
+      res.status(500).json({ success: false, message: 'Erro ao remover o usuário' });
   }
 });
 

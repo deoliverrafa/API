@@ -120,6 +120,7 @@ router.get('/searchById', async (req, res) => {
 })
 
 // Rota para pegar imagem de perfil do usuário
+
 router.get('/getUserImage', async (req, res) => {
   try {
     await connection.connect();
@@ -194,6 +195,7 @@ router.put('/attProfile', upload.single('avatar'), async (req, res) => {
   }
 });
 
+
 // ROTA PARA GET DO INPUT FRIENDS
 router.get('/getUser', async (req, res) => {
   await connection.connect()
@@ -201,22 +203,22 @@ router.get('/getUser', async (req, res) => {
   const { nickName } = req.query;
 
   try {
-    // Certifique-se de que 'nickName' não é undefined ou null
-    if (!nickName) {
-      return res.status(400).json({ error: 'Parâmetro nickName não fornecido' });
-    }
+      // Certifique-se de que 'nickName' não é undefined ou null
+      if (!nickName) {
+          return res.status(400).json({ error: 'Parâmetro nickName não fornecido' });
+      }
 
-    // Use a função findUSersToFriends corrigida
-    const response = await context.read({ nickName: { $regex: new RegExp(nickName, 'i') } });
+      // Use a função findUSersToFriends corrigida
+      const response = await context.read({ nickName: { $regex: new RegExp(nickName, 'i') } });
 
-    if (!response || response.length === 0) {
-      return res.json({ message: 'Usuário não encontrado. Tente novamente.' });
-    }
+      if (!response || response.length === 0) {
+          return res.json({ message: 'Usuário não encontrado. Tente novamente.' });
+      }
 
-    return res.json(response);
+      return res.json(response)
   } catch (error) {
-    console.error('Erro ao buscar usuários:', error);
-    return res.status(500).json({ error: 'Erro interno do servidor' });
+      console.error('Erro ao buscar usuários:', error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
@@ -243,6 +245,7 @@ router.put('/follow', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
+
 
 // ROTA PARA PEGAR USUARIO ATUAL PELO ID
 router.get('/getCurrentUser', async (req, res) => {

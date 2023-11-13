@@ -203,22 +203,22 @@ router.get('/getUser', async (req, res) => {
   const { nickName } = req.query;
 
   try {
-      // Certifique-se de que 'nickName' não é undefined ou null
-      if (!nickName) {
-          return res.status(400).json({ error: 'Parâmetro nickName não fornecido' });
-      }
+    // Certifique-se de que 'nickName' não é undefined ou null
+    if (!nickName) {
+      return res.status(400).json({ error: 'Parâmetro nickName não fornecido' });
+    }
 
-      // Use a função findUSersToFriends corrigida
-      const response = await context.read({ nickName: { $regex: new RegExp(nickName, 'i') } });
+    // Use a função findUSersToFriends corrigida
+    const response = await context.read({ nickName: { $regex: new RegExp(nickName, 'i') } });
 
-      if (!response || response.length === 0) {
-          return res.json({ message: 'Usuário não encontrado. Tente novamente.' });
-      }
+    if (!response || response.length === 0) {
+      return res.json({ message: 'Usuário não encontrado. Tente novamente.' });
+    }
 
-      return res.json(response)
+    return res.json(response)
   } catch (error) {
-      console.error('Erro ao buscar usuários:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Erro ao buscar usuários:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
@@ -230,16 +230,20 @@ router.put('/follow', async (req, res) => {
     // Obtenha o ID do usuário a ser seguido
     const { currentUserId, userIdToFollow } = req.body;
 
-    console.log(userIdToFollow);
     // Encontra o usuário atual no banco de dados
     const currentUser = await userSchema.findById(currentUserId);
 
-    // Adiciona o ID do usuário a ser seguido ao array following
-    await currentUser.following.push(userIdToFollow);
+    console.log(currentUser)
+    if (currentUser) {
 
-    console.log("User beforte push", currentUser)
-    // Salva as alterações no banco de dados
-    await currentUser.save();
+      currentUser.following.push(userIdToFollow);
+
+      await currentUser.save();
+
+      res.status(200).json({ message: 'Usuário seguido com sucesso!' });
+    } else {
+      res.status(404).json({ error: 'Usuário não encontrado' });
+    }
 
     res.status(200).json({ message: 'Usuário seguido com sucesso!' });
   } catch (error) {
@@ -247,7 +251,6 @@ router.put('/follow', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
-
 
 // ROTA PARA PEGAR USUARIO ATUAL PELO ID
 router.get('/getCurrentUser', async (req, res) => {
@@ -268,17 +271,17 @@ router.get('/getCurrentUser', async (req, res) => {
 // ROTA PARA DEIXAR DE SEGUIR O USUARIO
 router.put('/unfollow', async (req, res) => {
   try {
-      const { userIdToUnfollow, currentUserId } = req.body;
+    const { userIdToUnfollow, currentUserId } = req.body;
 
-      // Lógica para remover o usuário do array 'following'
-      await userSchema.findByIdAndUpdate(currentUserId, {
-          $pull: { following: userIdToUnfollow },
-      });
+    // Lógica para remover o usuário do array 'following'
+    await userSchema.findByIdAndUpdate(currentUserId, {
+      $pull: { following: userIdToUnfollow },
+    });
 
-      res.status(200).json({ success: true, message: 'Usuário removido com sucesso' });
+    res.status(200).json({ success: true, message: 'Usuário removido com sucesso' });
   } catch (error) {
-      console.error('Erro ao remover o usuário:', error);
-      res.status(500).json({ success: false, message: 'Erro ao remover o usuário' });
+    console.error('Erro ao remover o usuário:', error);
+    res.status(500).json({ success: false, message: 'Erro ao remover o usuário' });
   }
 });
 

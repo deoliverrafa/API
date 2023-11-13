@@ -230,6 +230,7 @@ router.put('/follow', async (req, res) => {
     // Obtenha o ID do usuário a ser seguido
     const { currentUserId, userIdToFollow } = req.body;
 
+    console.log(userIdToFollow);
     // Encontra o usuário atual no banco de dados
     const currentUser = await userSchema.findById(currentUserId);
 

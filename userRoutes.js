@@ -234,15 +234,14 @@ router.put('/follow', async (req, res) => {
     const currentUser = await userSchema.findById(currentUserId);
 
     if (currentUser) {
-      // Verifica se a propriedade 'following' existe e, se não existir, a inicializa como um array vazio
       if (!currentUser.following) {
         currentUser.following = [];
       }
 
-      // Adiciona o novo ID de seguidor ao array 'following'
-      currentUser.following.push(userIdToFollow);
+      const updateData = { following: currentUser.following }; // Atualiza o campo 'following' com o array atualizado
 
-      console.log('Before Push', currentUser);
+      await context.update(currentUserId, updateData);
+
       // Salva as alterações no banco de dados
       await currentUser.save();
 

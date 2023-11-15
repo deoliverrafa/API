@@ -49,6 +49,11 @@ class MongoDB extends Icrud {
         return await this._usuario.findByIdAndUpdate(id, item, { new: true });
     }
 
+    async updateFollowing(id, item){
+        const result = await this._usuario.findByIdAndUpdate(id, { $set: item }, { new: true });
+        return result;
+    }
+
     async delete(id) {
         const result = await this._usuario.findByIdAndRemove(id);
         if (result == null) return "Usuário não encontrado Tente Novamente!!!"

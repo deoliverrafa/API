@@ -242,6 +242,7 @@ router.put('/follow', async (req, res) => {
       // Adiciona o novo ID de seguidor ao array 'following'
       currentUser.following.push(userIdToFollow);
 
+      console.log('Before Push', currentUser);
       // Salva as alterações no banco de dados
       await currentUser.save();
 

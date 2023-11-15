@@ -243,7 +243,7 @@ router.put('/follow', async (req, res) => {
 
       const updateData = { following: currentUser.following }; // Atualiza o campo 'following' com o array atualizado
 
-      await context.update(currentUserId, updateData);
+      await context.updateFollowing(currentUserId, updateData);
 
       // Salva as alterações no banco de dados
       await currentUser.save();

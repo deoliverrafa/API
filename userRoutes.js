@@ -238,6 +238,9 @@ router.put('/follow', async (req, res) => {
         currentUser.following = [];
       }
 
+      // Adiciona o userIdToFollow ao array 'following'
+      currentUser.following.push(userIdToFollow);
+
       const updateData = { following: currentUser.following }; // Atualiza o campo 'following' com o array atualizado
 
       await context.update(currentUserId, updateData);

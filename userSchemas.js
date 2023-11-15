@@ -1,30 +1,39 @@
 const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema({
+    
     nickName: {
         type: String,
         required: true,
+        index: true,
     },
+
     userName: {
         type: String,
         required: true,
+        index:true,
     },
+
     phoneNumber: {
         type: String,
         required: false, // Tornar este campo não obrigatório
     },
+
     email: {
         type: String,
         required: false, // Tornar este campo não obrigatório
     },
+
     password: {
         type: String,
         required: true,
     },
-    nacionality:{
+
+    nacionality: {
         type: String,
         require: true,
     },
+
     birthDayData: {
         type: String,
     },
@@ -33,38 +42,36 @@ const userSchema = mongoose.Schema({
         default: () => new Date(),
         require: false,
     },
+
     type: {
         type: String,
         require: false,
     },
+
     avatar: {
         filename: String,
         contentType: String,
         image: Buffer,
     },
-    nFollowers: {
-        type: String,
-        require: false,
-    },
-    nFollowing: {
-        type: String,
-        require: false,
-    },
-    city:{
-        type: String,
-        require: false,
-    },
-    state: {
-        type: String,
-        require: false,
-    },
+
     bio: {
         type: String,
         require: false,
     },
+
     messages: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Message'
+    }],
+
+    following: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+
+    blockedUsers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }]
 });
 

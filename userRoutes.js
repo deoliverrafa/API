@@ -222,7 +222,6 @@ router.get('/getUser', async (req, res) => {
   }
 });
 
-
 // ROTA PARA SEGUIR USUÁRIO
 router.put('/follow', async (req, res) => {
   try {
@@ -233,25 +232,14 @@ router.put('/follow', async (req, res) => {
     // Encontra o usuário atual no banco de dados
     const currentUser = await userSchema.findById(currentUserId);
 
-    if (currentUser) {
-      if (!currentUser.following) {
-        currentUser.following = [];
-      }
+    console.log(currentUser.following)
+    // Adiciona o ID do usuário a ser seguido ao array following
+    currentUser.following.push(userIdToFollow);
 
-      // Adiciona o userIdToFollow ao array 'following'
-      currentUser.following.push(userIdToFollow);
+    // Salva as alterações no banco de dados
+    await currentUser.save();
 
-      const updateData = { following: currentUser.following }; // Atualiza o campo 'following' com o array atualizado
-
-      await context.updateFollowing(currentUserId, updateData);
-
-      // Salva as alterações no banco de dados
-      await currentUser.save();
-
-      res.status(200).json({ message: 'Usuário seguido com sucesso!' });
-    } else {
-      res.status(404).json({ error: 'Usuário não encontrado' });
-    }
+    res.status(200).json({ message: 'Usuário seguido com sucesso!' });
   } catch (error) {
     console.error('Erro ao seguir o usuário:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });

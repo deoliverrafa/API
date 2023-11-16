@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const MongoDB = require('../config/MongoDB');
-const userSchema = require('../schemas/userSchemas.js')
-const Context = require('../config/contextStrategy/contextStrategy.js')
+const MongoDB = require('./MongoDB.js');
+const userSchema = require('./userSchemas.js')
+const Context = require('./contextStrategy.js')
 const context = new Context(new MongoDB(userSchema))
-const getConnection = require('../config/connection');
+const getConnection = require('./connection.js');
 const connection = new getConnection()
 const bcrypt = require('bcrypt');
 const multer = require('multer')

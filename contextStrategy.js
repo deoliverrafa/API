@@ -1,4 +1,4 @@
-const Icrud = require('./crud.js')
+const Icrud = require('./crud')
 
 class ContextStrategy extends Icrud {
     constructor(strategy) {
@@ -20,13 +20,17 @@ class ContextStrategy extends Icrud {
     delete(item) {
         return this.strategy.delete(item)
     }
-    
-    updateFollowing(id, item){
-        return this.strategy.updateFollowing(id,item);
-    }
 
     async send(senderId, recipientId, Message, expirationTime) {
         return await this.strategy.send(senderId, recipientId, Message, expirationTime);
+    }
+
+    async incrementFollowersCount(currentUserId, userIdToFollow){
+        return await this.strategy.incrementFollowersCount(currentUserId, userIdToFollow);
+    }
+
+    async decrementFollowersCount(currentUserId, userIdToUnfollow){
+        return await this.strategy.decrementFollowersCount(currentUserId, userIdToUnfollow);
     }
 }
 

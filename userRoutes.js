@@ -207,7 +207,7 @@ router.put('/attProfilePhoto', upload.single('avatar'), async (req, res) => {
             .rotate() // Corrigir a orientação da imagem
             .resize({ width: 500 }) // Redimensionar para largura máxima de 500 pixels
             .toFormat('jpeg') // Converter para JPEG (pode ser outro formato)
-            .jpeg({ quality: 50 }) // Ajustar a qualidade do JPEG (valor entre 0 e 100)
+            .jpeg({ quality: 80 }) // Ajustar a qualidade do JPEG (valor entre 0 e 100)
             .toBuffer();
 
           updateData['avatar.image'] = resizedImageBuffer;

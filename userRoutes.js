@@ -107,7 +107,6 @@ router.get('/login', async (req, res) => {
 });
 
 // PESQUISA E RETORNA OS DADOS PEDIDO DE UM USUÁRIO
-// PESQUISA E RETORNA OS DADOS PEDIDO DE UM USUÁRIO
 router.get('/searchById', async (req, res) => {
   try {
     await connection.connect();
@@ -205,9 +204,9 @@ router.put('/attProfilePhoto', upload.single('avatar'), async (req, res) => {
           // Redimensionar e corrigir a orientação da imagem usando sharp
           const resizedImageBuffer = await sharp(avatarFile.buffer)
             .rotate() // Corrigir a orientação da imagem
-            .resize({ width: 500,  height: 500}) // Redimensionar para largura máxima de 500 pixels
+            .resize({ width: 500 }) // Redimensionar para largura máxima de 500 pixels
             .toFormat('jpeg') // Converter para JPEG (pode ser outro formato)
-            .jpeg({ quality: 80 }) // Ajustar a qualidade do JPEG (valor entre 0 e 100)
+            .jpeg({ quality: 50 }) // Ajustar a qualidade do JPEG (valor entre 0 e 100)
             .toBuffer();
 
           updateData['avatar.image'] = resizedImageBuffer;
@@ -351,5 +350,15 @@ router.put('/unfollow', async (req, res) => {
     res.status(500).json({ success: false, message: 'Erro ao remover o usuário' });
   }
 });
+
+
+// ROTA PARA CONFIGURAR EXIBIÇÃO DE INFORMAÇÕES EM CONFIGURAÇÕES
+router.put('/modifySettings', async () => {
+
+  console.log(req.body);
+  const { nacionality, birthDayData, email, phoneNumber, localUserId } = req.body
+
+  await userSchema.findByIdAndUpdate(c)
+})
 
 module.exports = router;

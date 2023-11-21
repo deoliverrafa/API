@@ -358,7 +358,7 @@ router.put('/modifySettings', async (req, res) => {
   console.log(req.body);
   const { nacionality, birthDayData, email, phoneNumber, localUserId } = req.body
 
-  await userSchema.findByIdAndUpdate(c)
+  // await userSchema.findByIdAndUpdate(c)
 })
 
 module.exports = router;

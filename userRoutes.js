@@ -355,10 +355,41 @@ router.put('/unfollow', async (req, res) => {
 // ROTA PARA CONFIGURAR EXIBIÇÃO DE INFORMAÇÕES EM CONFIGURAÇÕES
 router.put('/modifySettings', async (req, res) => {
 
-  console.log(req.body);
-  const { nacionality, birthDayData, email, phoneNumber, localUserId } = req.body
+  try {
+    await connection.connect();
 
-  // await userSchema.findByIdAndUpdate(c)
+    const { nacionality, birthDayData, email, phoneNumber, localUserId } = req.body
+
+    // VERIFICA INDIVIDUALMENTE CADA PARÂMETRO PASSADO PARA ATUALIZAR DE ACORDO
+    if (email) {
+      // ENCONTRA E ATUALIZA O CAMPO DESEJADO DO USUÁRIO
+      await userSchema.findByIdAndUpdate(localUserId, {
+        $pull: { showEmail: email }
+      })
+
+      return res.status(200).json({ sucess: true, message: 'Visibilidade email atualizada' })
+    }
+    if (birthDayData) {
+      await userSchema.findByIdAndUpdate(localUserId, {
+        $pull: { showBirthDayData: birthDayData }
+      })
+      return res.status(200).json({ sucess: true, message: 'Visibilidade birthDayData atualizada' })
+    }
+    if (nacionality) {
+      await userSchema.findByIdAndUpdate(localUserId, {
+        $pull: { showNacionality: nacionality }
+      })
+      return res.status(200).json({ sucess: true, message: 'Visibilidade nacionality atualizada' })
+    }
+    if (phoneNumber) {
+      await userSchema.findByIdAndUpdate(localUserId, {
+        $pull: { showPhoneNumber: phoneNumber }
+      })
+      return res.status(200).json({ sucess: true, message: 'Visibilidade phoneNumber atualizada' })
+    }
+  } catch (error) {
+    return res.status(500).json({ error: `Erro ao atualizar visibilidade de dados --> ${error}` })
+  }
 })
 
 module.exports = router;

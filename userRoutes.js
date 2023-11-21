@@ -361,31 +361,47 @@ router.put('/modifySettings', async (req, res) => {
     const { nacionality, birthDayData, email, phoneNumber, localUserId } = req.body
 
     // VERIFICA INDIVIDUALMENTE CADA PARÂMETRO PASSADO PARA ATUALIZAR DE ACORDO
-    if (email) {
+    if (email == 'true') {
       // ENCONTRA E ATUALIZA O CAMPO DESEJADO DO USUÁRIO
       await userSchema.findByIdAndUpdate(localUserId, {
         $pull: { showEmail: email }
       })
 
       return res.status(200).json({ sucess: true, message: 'Visibilidade email atualizada' })
+    } else {
+      await userSchema.findByIdAndUpdate(localUserId, {
+        $pull: { showEmail: email }
+      })
     }
-    if (birthDayData) {
+    if (birthDayData == 'true') {
       await userSchema.findByIdAndUpdate(localUserId, {
         $pull: { showBirthDayData: birthDayData }
       })
       return res.status(200).json({ sucess: true, message: 'Visibilidade birthDayData atualizada' })
+    } else {
+      await userSchema.findByIdAndUpdate(localUserId, {
+        $pull: { showBirthDayData: birthDayData }
+      })
     }
-    if (nacionality) {
+    if (nacionality == 'true') {
       await userSchema.findByIdAndUpdate(localUserId, {
         $pull: { showNacionality: nacionality }
       })
       return res.status(200).json({ sucess: true, message: 'Visibilidade nacionality atualizada' })
+    } else {
+      await userSchema.findByIdAndUpdate(localUserId, {
+        $pull: { showNacionality: nacionality }
+      })
     }
-    if (phoneNumber) {
+    if (phoneNumber == 'true') {
       await userSchema.findByIdAndUpdate(localUserId, {
         $pull: { showPhoneNumber: phoneNumber }
       })
       return res.status(200).json({ sucess: true, message: 'Visibilidade phoneNumber atualizada' })
+    } else {
+      await userSchema.findByIdAndUpdate(localUserId, {
+        $pull: { showPhoneNumber: phoneNumber }
+      })
     }
   } catch (error) {
     return res.status(500).json({ error: `Erro ao atualizar visibilidade de dados --> ${error}` })

@@ -354,58 +354,27 @@ router.put('/unfollow', async (req, res) => {
 
 // ROTA PARA CONFIGURAR EXIBIÇÃO DE INFORMAÇÕES EM CONFIGURAÇÕES
 router.put('/modifySettings', async (req, res) => {
-
   try {
-    await connection.connect();
+    const { nacionality, birthDayData, email, phoneNumber, localUserId } = req.body;
 
-    const { nacionality, birthDayData, email, phoneNumber, localUserId } = req.body
+    // Atualiza campos de visibilidade
+    const updateData = {};
+    if (email !== undefined) updateData.showEmail = email === 'true';
+    if (birthDayData !== undefined) updateData.showBirthDayData = birthDayData === 'true';
+    if (nacionality !== undefined) updateData.showNacionality = nacionality === 'true';
+    if (phoneNumber !== undefined) updateData.showPhoneNumber = phoneNumber === 'true';
 
-    // VERIFICA INDIVIDUALMENTE CADA PARÂMETRO PASSADO PARA ATUALIZAR DE ACORDO
-    if (email == 'true') {
-      // ENCONTRA E ATUALIZA O CAMPO DESEJADO DO USUÁRIO
-      await userSchema.findByIdAndUpdate(localUserId, {
-        $pull: { showEmail: email }
-      })
+    // Atualiza o usuário com os campos de visibilidade modificados
+    const updatedUser = await Usuario.findByIdAndUpdate(localUserId, { $set: updateData }, { new: true });
 
-      return res.status(200).json({ sucess: true, message: 'Visibilidade email atualizada' })
-    } else {
-      await userSchema.findByIdAndUpdate(localUserId, {
-        $pull: { showEmail: email }
-      })
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'Usuário não encontrado.' });
     }
-    if (birthDayData == 'true') {
-      await userSchema.findByIdAndUpdate(localUserId, {
-        $pull: { showBirthDayData: birthDayData }
-      })
-      return res.status(200).json({ sucess: true, message: 'Visibilidade birthDayData atualizada' })
-    } else {
-      await userSchema.findByIdAndUpdate(localUserId, {
-        $pull: { showBirthDayData: birthDayData }
-      })
-    }
-    if (nacionality == 'true') {
-      await userSchema.findByIdAndUpdate(localUserId, {
-        $pull: { showNacionality: nacionality }
-      })
-      return res.status(200).json({ sucess: true, message: 'Visibilidade nacionality atualizada' })
-    } else {
-      await userSchema.findByIdAndUpdate(localUserId, {
-        $pull: { showNacionality: nacionality }
-      })
-    }
-    if (phoneNumber == 'true') {
-      await userSchema.findByIdAndUpdate(localUserId, {
-        $pull: { showPhoneNumber: phoneNumber }
-      })
-      return res.status(200).json({ sucess: true, message: 'Visibilidade phoneNumber atualizada' })
-    } else {
-      await userSchema.findByIdAndUpdate(localUserId, {
-        $pull: { showPhoneNumber: phoneNumber }
-      })
-    }
+
+    return res.status(200).json({ success: true, message: 'Visibilidade atualizada com sucesso.', updatedUser });
   } catch (error) {
-    return res.status(500).json({ error: `Erro ao atualizar visibilidade de dados --> ${error}` })
+    return res.status(500).json({ success: false, error: `Erro ao atualizar visibilidade de dados --> ${error}` });
   }
-})
+});
 
 module.exports = router;

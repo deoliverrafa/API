@@ -373,7 +373,7 @@ router.put('/modifySettings', async (req, res) => {
     };
 
     // Atualiza o usuário com os campos de visibilidade modificados
-    const updatedUser = await Usuario.findByIdAndUpdate(localUserId, { $set: updateData }, { new: true });
+    const updatedUser = await userSchema.findByIdAndUpdate(localUserId, { $set: updateData }, { new: true });
 
     if (!updatedUser) {
       return res.status(404).json({ success: false, message: 'Usuário não encontrado.' });

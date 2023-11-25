@@ -351,26 +351,25 @@ router.put('/unfollow', async (req, res) => {
   }
 });
 
-
 // ROTA PARA CONFIGURAR EXIBIÇÃO DE INFORMAÇÕES EM CONFIGURAÇÕES
 router.put('/modifySettings', async (req, res) => {
   try {
     const { nacionality, birthDayData, email, phoneNumber, localUserId } = req.body;
 
-    // Atualiza campos de visibilidade
+    // Atualiza campos de visibilidade diretamente se os valores forem booleanos
     const updateData = {};
     if (email !== undefined) {
-      updateData.showEmail = email === 'true'
-    };
+      updateData.showEmail = email;
+    }
     if (birthDayData !== undefined) {
-      updateData.showBirthDayData = birthDayData === 'true'
-    };
+      updateData.showBirthDayData = birthDayData;
+    }
     if (nacionality !== undefined) {
-      updateData.showNacionality = nacionality === 'true'
-    };
+      updateData.showNacionality = nacionality;
+    }
     if (phoneNumber !== undefined) {
-      updateData.showPhoneNumber = phoneNumber === 'true'
-    };
+      updateData.showPhoneNumber = phoneNumber;
+    }
 
     // Atualiza o usuário com os campos de visibilidade modificados
     const updatedUser = await userSchema.findByIdAndUpdate(localUserId, { $set: updateData }, { new: true });
@@ -385,58 +384,7 @@ router.put('/modifySettings', async (req, res) => {
   }
 });
 
-// ROTA PARA MODIFICAR SENHA ANTIGA
-router.put('/modifyPassword', async (req, res) => {
-  await connection.connect();
-
-  const { localUserId, password, newPassword } = req.body;
-  try {
-    const [user] = await context.read({ _id: localUserId });
-
-    if (!user) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-
-    // Verifica se a nova senha é igual à senha anterior
-    if (password === newPassword) {
-      return res.status(400).json({ error: 'Nova senha igual à anterior' });
-    }
-
-    if (!user.password || !password) {
-      return res.status(500).json({ error: 'Senha inválida' });
-    }
-
-    bcrypt.compare(password, user.password, async (err, passwordMatch) => {
-      if (err) {
-        return res.status(500).json({ error: 'Erro ao comparar senhas.' });
-      }
-
-      if (passwordMatch) {
-        try {
-          const encryptedPass = await bcrypt.hash(newPassword, 5);
-
-          const updatedUser = await context.update({ _id: localUserId }, { password: encryptedPass });
-
-          if (!updatedUser) {
-            return res.status(401).json({ error: 'Erro ao atualizar senha do usuário' });
-          }
-
-          return res.status(200).json({ message: 'Senha alterada com sucesso' });
-        } catch (error) {
-          console.log('Erro ao modificar a senha:', error);
-          return res.status(500).json({ error: 'Erro ao modificar a senha' });
-        }
-      } else {
-        return res.status(401).json({ error: 'Senha incorreta' });
-      }
-    });
-
-  } catch (error) {
-    console.log('Erro ao encontrar o usuário:', error);
-    return res.status(500).json({ error: 'Erro ao encontrar o usuário' });
-  }
-});
-
+// ROTA PARA DELETAR CONTA
 router.delete('/delAccount', async (req, res) => {
   const { localUserId, password } = req.body;
 

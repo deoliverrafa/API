@@ -357,20 +357,20 @@ router.put('/modifySettings', async (req, res) => {
   try {
     const { nacionality, birthDayData, email, phoneNumber, localUserId } = req.body;
 
-    // Atualiza campos de visibilidade diretamente se os valores forem booleanos
+    // Atualiza campos de visibilidade
     const updateData = {};
     if (email !== undefined) {
-      updateData.showEmail = email;
-    }
+      updateData.showEmail = email === 'true'
+    };
     if (birthDayData !== undefined) {
-      updateData.showBirthDayData = birthDayData;
-    }
+      updateData.showBirthDayData = birthDayData === 'true'
+    };
     if (nacionality !== undefined) {
-      updateData.showNacionality = nacionality;
-    }
+      updateData.showNacionality = nacionality === 'true'
+    };
     if (phoneNumber !== undefined) {
-      updateData.showPhoneNumber = phoneNumber;
-    }
+      updateData.showPhoneNumber = phoneNumber === 'true'
+    };
 
     // Atualiza o usuário com os campos de visibilidade modificados
     const updatedUser = await userSchema.findByIdAndUpdate(localUserId, { $set: updateData }, { new: true });
@@ -383,6 +383,34 @@ router.put('/modifySettings', async (req, res) => {
   } catch (error) {
     return res.status(500).json({ success: false, error: `Erro ao atualizar visibilidade de dados --> ${error}` });
   }
+});
+
+// ROTA PARA MODIFICAR A SENHA
+router.get('/modifyPassword', async (req, res) => {
+  const { localUserId, password, newPassowrd } = req.body;
+;
+  const user = await context.read(localUserId)
+
+  // Compara a senha fornecida com a senha criptografada no banco de dados
+  bcrypt.compare(password, user.password, (err, passwordMatch) => {
+    if (err) {
+      return res.status(500).json({ error: 'Erro ao comparar senhas.' });
+    }
+
+    if (passwordMatch) {
+      // Senhas coincidem, o usuário está autenticado
+      return res.json(user);
+    } else {
+      // Senha incorreta
+      return res.status(401).json({ error: "Senha incorreta" });
+    }
+  });
+
+  const encriptedPass = bcrypt.hash(newPassowrd, 5);
+
+  const updatedUser = userSchema.findByIdAndUpdate(localUserId, { $set: { password: encriptedPass } }, { new: true });
+
+  return res.status(200).json({message: "Senha Alterada com Sucesso"});
 });
 
 module.exports = router;

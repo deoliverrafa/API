@@ -18,7 +18,7 @@ router.post('/cadastrar', async (req, res) => {
 
     const { nickName, userName, phoneNumber, email, password, birthDayData, type, nacionality } = req.body;
 
-    if (!nickName || !userName || !phoneNumber || !email || !password) {
+    if (!nickName || !userName || !phoneNumber || !email || !password || !nacionality) {
       return res.status(400).json({ error: 'Preencha tudo Corretamente' });
     }
 
@@ -385,32 +385,92 @@ router.put('/modifySettings', async (req, res) => {
   }
 });
 
-// ROTA PARA MODIFICAR A SENHA
-router.get('/modifyPassword', async (req, res) => {
-  const { localUserId, password, newPassowrd } = req.body;
-;
-  const user = await context.read(localUserId)
+// ROTA PARA MODIFICAR SENHA ANTIGA
+router.put('/modifyPassword', async (req, res) => {
+  await connection.connect();
 
-  // Compara a senha fornecida com a senha criptografada no banco de dados
-  bcrypt.compare(password, user.password, (err, passwordMatch) => {
-    if (err) {
-      return res.status(500).json({ error: 'Erro ao comparar senhas.' });
+  const { localUserId, password, newPassword } = req.body;
+  try {
+    const [user] = await context.read({ _id: localUserId });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    if (passwordMatch) {
-      // Senhas coincidem, o usuário está autenticado
-      return res.json(user);
-    } else {
-      // Senha incorreta
-      return res.status(401).json({ error: "Senha incorreta" });
+    // Verifica se a nova senha é igual à senha anterior
+    if (password === newPassword) {
+      return res.status(400).json({ error: 'Nova senha igual à anterior' });
     }
-  });
 
-  const encriptedPass = bcrypt.hash(newPassowrd, 5);
+    if (!user.password || !password) {
+      return res.status(500).json({ error: 'Senha inválida' });
+    }
 
-  const updatedUser = userSchema.findByIdAndUpdate(localUserId, { $set: { password: encriptedPass } }, { new: true });
+    bcrypt.compare(password, user.password, async (err, passwordMatch) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao comparar senhas.' });
+      }
 
-  return res.status(200).json({message: "Senha Alterada com Sucesso"});
+      if (passwordMatch) {
+        try {
+          const encryptedPass = await bcrypt.hash(newPassword, 5);
+
+          const updatedUser = await context.update({ _id: localUserId }, { password: encryptedPass });
+
+          if (!updatedUser) {
+            return res.status(401).json({ error: 'Erro ao atualizar senha do usuário' });
+          }
+
+          return res.status(200).json({ message: 'Senha alterada com sucesso' });
+        } catch (error) {
+          console.log('Erro ao modificar a senha:', error);
+          return res.status(500).json({ error: 'Erro ao modificar a senha' });
+        }
+      } else {
+        return res.status(401).json({ error: 'Senha incorreta' });
+      }
+    });
+
+  } catch (error) {
+    console.log('Erro ao encontrar o usuário:', error);
+    return res.status(500).json({ error: 'Erro ao encontrar o usuário' });
+  }
 });
+
+router.delete('/delAccount', async (req, res) => {
+  const { localUserId, password } = req.body;
+
+  console.log(req.body);
+  await connection.connect();
+  
+  try {
+    // PUXA UM USUÁRIO NO BANCO DE DADOS
+    const [user] = await context.read({ _id: localUserId });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    // Verificar se a senha fornecida corresponde à senha do usuário
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    console.log(passwordMatch);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Senha incorreta' });
+    }
+
+    // DELETA O USUÁRIO ESPECÍFICO PASSADO
+    const deletedUser = await userSchema.findOneAndDelete({_id:localUserId})
+
+    if (!deletedUser) {
+      return res.status(401).json({message: 'Erro ao deletar usuário'})
+    }
+    // Retorna uma resposta de sucesso após a exclusão da conta
+    return res.status(200).json({ message: 'Conta excluída com sucesso' });
+  } catch (error) {
+    console.log('Erro ao excluir conta:', error);
+    return res.status(500).json({ error: 'Erro ao excluir a conta' });
+  }
+});
+
 
 module.exports = router;

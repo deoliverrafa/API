@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const MongoDB = require('./MongoDB.js');
+const MongoDB = require('./MongoDB');
 const userSchema = require('./userSchemas.js')
 const Context = require('./contextStrategy.js')
 const context = new Context(new MongoDB(userSchema))
-const getConnection = require('./connection.js');
+const getConnection = require('./connection');
 const connection = new getConnection()
 const bcrypt = require('bcrypt');
 const multer = require('multer')
@@ -106,7 +106,7 @@ router.get('/login', async (req, res) => {
   }
 });
 
-// PESQUISA E RETORNA OS DADOS PEDIDO DE UM USUÁRIO
+// PESQUISA E RETORNA OS DADOS PEDIDO DE UM USUÁRIO PELO ID
 router.get('/searchById', async (req, res) => {
   try {
     await connection.connect();
@@ -164,7 +164,6 @@ router.get('/getUserImage', async (req, res) => {
     }
 
     const contentType = user.avatar.contentType;
-
     res.set('Content-Type', contentType);
     res.send(user.avatar.image);
   } catch (error) {
@@ -177,7 +176,7 @@ const storage = multer.memoryStorage(); // Usando memoryStorage para armazenar o
 
 const upload = multer({ storage: storage });
 
-// Rota para atualizar os Dados do Usuário
+// SHARP PARA ALTERAR A QUALIDADE DA FOTO DO USUÁRIO
 const sharp = require('sharp');
 
 // Atualiza a Imagem de perfil do usuário
